@@ -46,7 +46,7 @@ useFocusEffect(
         <View style={styles.container}>
 
         <TouchableOpacity style={styles.atualizar} onPress={() => navigation.navigate("Adicionar")}>
-            <Text>ADICIONAR APARELHO</Text>
+            <Text style={{color: "#F5F5F5", fontWeight: "600"}}>ADICIONAR APARELHO</Text>
         </TouchableOpacity>
         <FlatList
         data={dispositivos}
@@ -136,8 +136,9 @@ const styles = StyleSheet.create({
         borderRadius: 16
     },
     atualizar: {
-        width: "50%",
+        width: "95%",
         height: 50,
+        marginVertical: 10,
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
