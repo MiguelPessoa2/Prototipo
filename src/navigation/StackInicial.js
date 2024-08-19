@@ -1,0 +1,23 @@
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createStackNavigator } from "@react-navigation/stack";
+import TelaInicial from '../screens/TelaInicial'
+import TelaCadastro from "../screens/TelaCadastro";
+import TelaLogin from "../screens/TelaLogin";
+import NavPrincipal from "./NavPrincipal";
+
+const Stack = createStackNavigator();
+
+export default function StackNavigator() {
+
+    //configuração da navegação inicial do app, entre tela inicial, login, cadastro, e Home.
+
+    return(
+        <Stack.Navigator initialRouteName="Home">
+            <Stack.Screen name="Inicial" component={TelaInicial} options={{headerShown: false}}/>
+            <Stack.Screen name="Cadastro" component={TelaCadastro} options={{headerShown: false}}/>
+            <Stack.Screen name="Login" component={TelaLogin} options={{headerShown: false}}/>
+            <Stack.Screen name="NavPrincipal" component={NavPrincipal} options={{headerShown: false, gestureEnabled: false}}/>
+        </Stack.Navigator>
+    )
+}
