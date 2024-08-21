@@ -6,8 +6,10 @@ export default function Index() {
   //módulos para a navegação inicial do app
 
   return (
-    <NavigationContainer independent={true}>
+      <NavigationContainer independent={true}>
       <StackNavigator />
     </NavigationContainer>
+
   );
 }
+

@@ -1,6 +1,9 @@
-import {Text, View, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
+import {Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, Button} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome6';
+import Checkbox from 'expo-checkbox';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function TelaLogin({navigation}) {
 
@@ -13,6 +16,8 @@ export default function TelaLogin({navigation}) {
     //dados inseridos pelo o usuário para fazer login
     const [senhaInput, setSenhaInput] = useState("")
     const [emailInput, setEmailInput] = useState("")
+
+    const [isChecked, setChecked] = useState(false)
 
     //função para resgatar dados de cadastro
     const resgatarData = async () => {
@@ -29,55 +34,86 @@ export default function TelaLogin({navigation}) {
     }
 
     const handleLogin = async () => {
-      
-      if(!userEmail || !userSenha || !senhaInput || !emailInput){
-        return Alert.alert("Erro", "os campos usuário e senha não podem estar vazios.");
+
+      if(!emailInput){
+        return Alert.alert("Erro", "O campo usuário não pode ficar vazio.")
+      }
+            
+      if(!senhaInput){
+        return Alert.alert("Erro", "O campo senha não pode ficar vazio.");
       }
 
       if((userEmail === emailInput) && (userSenha === senhaInput)){
         navigation.navigate("NavPrincipal")
 
       } else {
-        Alert.alert("erro", "usuário ou senha incorreta")
+        Alert.alert("Erro ao fazer Login", "usuário ou senha incorreto.")
       }
     }
 
-    useEffect(() => {
-      resgatarData();
+    useFocusEffect(
+      useCallback(() =>{
+        resgatarData();
 
-    }, [])
+      }, [])
+    )
+
     return(
+    <ImageBackground source={require('../assets/prism.png')} style={styles.background}>
+    <View style={styles.container}>
+        <Icon name="bolt" size={100} color="#FFB300" style={{paddingBottom: 50}}/>
+        <View style={styles.wrapperInput}>
+          <Icon name="user" style={{flex: 1}} size={24}/>
 
-        <View style={styles.container}>
+          <TextInput
+          style={styles.textInput}
+          placeholder="Usuário:"
+          placeholderTextColor="darkgray"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={emailInput}
+          onChangeText={(email) => setEmailInput(email)}>
+          </TextInput>
+        </View>
 
-            <Text style={styles.titulo}>FAZER LOGIN</Text>
+        <View style={styles.wrapperInput}>
+          <Icon name="lock" style={{flex: 1}} size={24} />
+          
+          <TextInput
+          style={styles.textInput}
+          placeholder="Senha:"
+          placeholderTextColor="darkgray"
+          keyboardType="default"
+          autoCapitalize="none"
+          secureTextEntry
+          value={senhaInput}
+          onChangeText={(senha) => setSenhaInput(senha)}>
+          </TextInput>
+        </View>
 
-            <TextInput
-            style={styles.textInput}
-            placeholder="E-mail:"
-            placeholderTextColor="#BDC3C7"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={emailInput}
-            onChangeText={(email) => setEmailInput(email)}>
-            </TextInput>
+        <View style={{flexDirection: "row", padding: 10, width: "90%", justifyContent: "center", alignItems: "center"}}>
+          <Checkbox 
+          value={isChecked} 
+          onValueChange={setChecked} 
+          style={{borderRadius: 10, borderColor: "darkorange"}}/>
+          <Text style={{color: "gray", fontSize: 18, paddingLeft: 16}}>Deseja lembrar sua senha?</Text>
+        </View>
 
-            <TextInput
-            style={styles.textInput}
-            placeholder="Senha:"
-            placeholderTextColor="#BDC3C7"
-            keyboardType="default"
-            autoCapitalize="none"
-            secureTextEntry
-            value={senhaInput}
-            onChangeText={(senha) => setSenhaInput(senha)}>
-            </TextInput>
 
             <TouchableOpacity style={styles.cadastrar} onPress={handleLogin}>
-                <Text style={styles.textoCadastrar}> FAZER LOGIN</Text>
+                <Text style={{color: "black", fontWeight: "700"}}>ENTRAR</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.criar} onPress={() => navigation.navigate("Cadastro")}>
+                <Text style={{color: "black", fontWeight: "700"}}>CRIAR CONTA</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.deletar} onPress={async () => await AsyncStorage.clear()}>
+                <Text style={{color: "black", fontWeight: "700"}}>DELETAR DADOS</Text>
             </TouchableOpacity>
 
         </View>
+        </ImageBackground>
     )
 }
 
@@ -87,40 +123,77 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center', // Centraliza horizontalmente o conteúdo
-        backgroundColor: "#2C3E50",
+        backgroundColor: "transparent",
         gap: 10
       },
 
       textInput: {
-        height:40,
-        width: "80%",
-        backgroundColor: "#34495E",
+        flex: 8,
+        height: 40,
         borderColor: "transparent",
-        borderBottomColor: "gray",
-        borderBottomWidth: 2,
-        borderTopLeftRadius: 5,
-        borderTopRightRadius: 5,
-        borderWidth: 1,
         paddingHorizontal: 8,
         color: '#ECF0F1',
         fontSize: 16,
       },
       cadastrar: {
-        backgroundColor: "#FFA500",
-        width: "80%",
-        height: 40,
-        borderRadius: 10,
+        backgroundColor: "rgba(255, 165, 0, 0.7)",
+        width: "60%",
+        height: 60,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: "orange",
         justifyContent: "center",
         alignItems: "center",
+        marginTop: 30
       },
       textoCadastrar: {
-        color: "#8B4513",
+        color: "#D3D3D3",
         fontWeight: "bold",
       },
-      titulo: {
-        color: "#E6E6E6",
-        fontSize: 26,
-        fontWeight: "600",
-        textDecorationLine: "underline" 
+      wrapperInput: {
+        width: "90%",
+        height:"fit-content",
+        borderColor: "gray",
+        borderWidth: 2,
+        padding: 10,
+        paddingLeft: 30,
+        marginBottom: 10,
+        flexDirection: "row",
+        backgroundColor: "rgba(169, 169, 169, 0.25)",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 100
+      },
+      background: {
+        flex: 1, // Ocupa todo o espaço disponível na tela
+        resizeMode: 'cover', // Ajusta a imagem para cobrir a tela inteira
+      },
+      criar: {
+        backgroundColor: "rgba(76, 175, 80, 0.7)",
+        width: "60%",
+        height: 60,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: "darkgreen",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 5
+      },
+      wrapperCheckBox: {
+        flexDirection: "row",
+        width: "89%",
+        height: "fot-content",
+        padding: 8
+      },
+      deletar: {
+        backgroundColor: "rgba(255, 0, 0, 0.7)",
+        width: "60%",
+        height: 60,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: "rgb(139, 0, 0)",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 5
       }
 })

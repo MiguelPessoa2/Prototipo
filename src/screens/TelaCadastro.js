@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from "react-native-vector-icons/FontAwesome6";
 
 export default function TelaCadastro ({navigation}){
 
@@ -8,12 +9,30 @@ export default function TelaCadastro ({navigation}){
 
   //variáveis de estado para obter a senha e email do usuário
   const [senha, setSenha] = useState("")
+  const [confirmSenha, setConfirmSenha] = useState("")
   const [email, setEmail] = useState("")
 
   const [senhaValida, setSenhaValida] = useState(false)
-  const [emailValido, setEmailValido] = useState(true)
+  const [emailValido, setEmailValido] = useState(false)
 
   const handleCadastro = async () => {
+    checarSenha();
+    
+    if(!emailValido){
+      Alert.alert("Usuário inválido", "Seu nome de usuário deve conter, no mínimo, 4 caracteres.")
+      return
+    }
+
+    if(!senhaValida){
+      Alert.alert("Senha inválida", "Sua senha deve possuir, no mínimo, 7 caracteres e uma letra Maiúscula.")
+      return
+    }
+    
+    if(senha !== confirmSenha){
+      Alert.alert('Erro ao confirmar senha', 'As senhas inseridas não são compatíveis')
+      return
+    }
+    
     if(senhaValida && emailValido) {
       try {
         await AsyncStorage.setItem("user_email", email);
@@ -30,39 +49,49 @@ export default function TelaCadastro ({navigation}){
       }
 
     } else {
-      Alert.alert("Senha ou email inválidos")
+      Alert.alert("Erro ao cadastrar", "Houve um erro inesperado ao fazer o cadastro.")
     }
   }
   
   function checarSenha() {
     if (
       senha.length >= 7 &&
-      /[A-Z]/.test(senha)
+      /[A-Z]/.test(senha) 
     ) {
       setSenhaValida(true);
     } else {
       setSenhaValida(false);
     }
+
+    if(email.length >= 4){
+      setEmailValido(true)
+    } else {
+      setEmailValido(false)
+    }
+    console.log(email, emailValido)
   }
 
   useEffect(() => {
 
     checarSenha()
 
-  }, [senha])
+  }, [senha, email])
 
   return (
+    <ImageBackground source={require("../assets/prism.png")} style={styles.background}>
     <View style={styles.container}>
+    <Icon name="bolt" size={100} color="#FFB300" style={{paddingBottom: 50}}/>
 
       <Text style={styles.titulo}>CADASTRO</Text>
 
       <View style={styles.wrapperInput}>
 
+        <Icon name="user" style={{flex: 1}} size={24} />
         <TextInput
         style={styles.textInput}
-        placeholder="E-mail:"
+        placeholder="Usuário:"
         placeholderTextColor="#BDC3C7"
-        keyboardType="email-address"
+        keyboardType="default"
         autoCapitalize="none"
         value={email}
         onChangeText={(novoEmail) => setEmail(novoEmail)}>
@@ -71,6 +100,7 @@ export default function TelaCadastro ({navigation}){
 
       <View style={styles.wrapperInput}>
 
+        <Icon name="lock" style={{flex: 1}} size={24} />
         <TextInput
         style={styles.textInput}
         placeholder="Senha:"
@@ -78,7 +108,24 @@ export default function TelaCadastro ({navigation}){
         keyboardType="default"
         autoCapitalize="none"
         value={senha}
+        secureTextEntry
         onChangeText={(novaSenha) => setSenha(novaSenha)}>
+
+        </TextInput>
+      </View>
+
+      <View style={styles.wrapperInput}>
+
+        <Icon name="lock" style={{flex: 1}} size={24} />
+        <TextInput
+        style={styles.textInput}
+        placeholder="Confirmar senha:"
+        placeholderTextColor="#BDC3C7"
+        keyboardType="default"
+        autoCapitalize="none"
+        value={confirmSenha}
+        secureTextEntry
+        onChangeText={(novaSenha) => setConfirmSenha(novaSenha)}>
 
         </TextInput>
       </View>
@@ -86,8 +133,15 @@ export default function TelaCadastro ({navigation}){
       <View style={styles.wrapperInput2}>
 
       {senhaValida?
-      <Text style={{color: "green", fontSize: 15, fontWeight: "600"}}>Senha válida!</Text> :
-      <Text style={{color: "red", fontSize: 15, fontWeight: "600"}}>Insira no mínimo 7 caracteres e uma Maiúscula</Text>
+      <> 
+        <Icon name="info" size={20} color="green"/>
+        <Text style={{color: "green", fontSize: 15, fontWeight: "600"}}>Senha válida!</Text>
+      </>   :
+      <>
+        <Icon name="info" size={20} color="red" />
+        <Text style={{color: "red", fontSize: 15, fontWeight: "600"}}>Insira no mínimo 7 caracteres e uma Maiúscula</Text>
+
+      </>
       }
       </View>
 
@@ -95,6 +149,7 @@ export default function TelaCadastro ({navigation}){
         <Text style={styles.textoCadastrar}> CADASTRAR</Text>
       </TouchableOpacity>
     </View>
+    </ImageBackground>
   );
 };
 
@@ -103,30 +158,31 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: "#2C3E50",
+    backgroundColor: "transparent",
     gap: 10
   },
   textInput: {
     flex: 10,
     height:40,
-    backgroundColor: "#34495E",
-    borderColor: "transparent",
-    borderBottomColor: "gray",
-    borderBottomWidth: 2,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
-    borderWidth: 1,
+    backgroundColor: "transparent",
     paddingHorizontal: 8,
     color: '#ECF0F1',
     fontSize: 16,
   },
 
   wrapperInput: {
+    width: "90%",
+    height:"fit-content",
+    borderColor: "gray",
+    borderWidth: 2,
+    padding: 10,
+    paddingLeft: 30,
+    marginBottom: 10,
     flexDirection: "row",
+    backgroundColor: "rgba(169, 169, 169, 0.25)",
+    justifyContent: "center",
     alignItems: "center",
-    gap: 15,
-    width: "80%",
-    height: 40
+    borderRadius: 100
   },
 
   wrapperInput2: {
@@ -134,18 +190,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 15,
     width: "80%",
-    height: 20,
+    height: 40,
     marginBottom: 15,
     flexWrap: "wrap"
   },
 
   cadastrar: {
-    backgroundColor: "#1ABC9C",
-    width: "80%",
-    height: 40,
-    borderRadius: 10,
+    backgroundColor: "rgba(76, 175, 80, 0.7)",
+    width: "60%",
+    height: 60,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: "darkgreen",
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 5
   },
 
   textoCadastrar: {
@@ -158,5 +217,9 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "600",
     textDecorationLine: "underline" 
-  }
+  },
+        background: {
+        flex: 1, // Ocupa todo o espaço disponível na tela
+        resizeMode: 'cover', // Ajusta a imagem para cobrir a tela inteira
+      },
 });
