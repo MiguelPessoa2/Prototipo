@@ -1,4 +1,4 @@
-import {Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, Button} from 'react-native';
+import {Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, useCallback } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome6';
@@ -165,7 +165,8 @@ const styles = StyleSheet.create({
         borderRadius: 100
       },
       background: {
-        flex: 1, // Ocupa todo o espaço disponível na tela
+        width: "100%",
+        height: "100%",
         resizeMode: 'cover', // Ajusta a imagem para cobrir a tela inteira
       },
       criar: {
