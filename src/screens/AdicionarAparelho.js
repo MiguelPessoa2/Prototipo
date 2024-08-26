@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import {Text, View, StyleSheet, TouchableOpacity, Alert} from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
+import axios from 'axios';
 
 export default function AdicionarAparelho({navigation}) {
 
@@ -12,40 +13,48 @@ export default function AdicionarAparelho({navigation}) {
     const handleAddDispositivo = async () => {
         
         try {
+
+        const resposta = await axios.post(`http://${enderecoIP}:8081/zeroconf/info`, {
+            deviceid: "",
+            data: {},    
+        }, {
+            timeout: 5000,
+        })
+        
+        console.log("Resposta: ", resposta.data)
+
+        const JSONdispositivos = await AsyncStorage.getItem("user_dispositivos");
+        let listaDispositivos = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : [];
+
+        // Encontrar o maior ID na lista de dispositivos e incrementar
+         const maxId = listaDispositivos.reduce((max, dispositivo) => Math.max(max, dispositivo.id), 0);
+        const novoId = maxId + 1;
             
-            const JSONdispositivos = await AsyncStorage.getItem("user_dispositivos");
-            let listaDispositivos = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : [];
 
-            // Encontrar o maior ID na lista de dispositivos e incrementar
-            const maxId = listaDispositivos.reduce((max, dispositivo) => Math.max(max, dispositivo.id), 0);
-            const novoId = maxId + 1;
+         const dispositivo = {
+
+            nome: nome,
+            desc: desc,
+             IP: enderecoIP,
+             id: novoId,
+             data: {}
+        }
+
+        listaDispositivos.push(dispositivo);
+         AsyncStorage.setItem("user_dispositivos", JSON.stringify(listaDispositivos));
             
-
-            const dispositivo = {
-
-                nome: nome,
-                desc: desc,
-                IP: enderecoIP,
-                id: novoId
-            }
-
-            listaDispositivos.push(dispositivo);
-            AsyncStorage.setItem("user_dispositivos", JSON.stringify(listaDispositivos));
+        setNome("");
+        setDesc("");
+        setEnderecoIP("");
             
-            setNome("");
-            setDesc("");
-            setEnderecoIP("");
-            
-            console.log(listaDispositivos);
-
-            Alert.alert("Sucesso!", "dispositivo cadastrado com sucesso!")
+        Alert.alert("Sucesso!", "dispositivo cadastrado com sucesso!")
+        navigation.navigate("Aparelhos");
 
         } catch (error) {
-            Alert.alert("Erro", "Não foi possivel resgatar so dispositivos");
+            Alert.alert("Erro", "Não foi possivel realizar a requisição");
 
         }
 
-        navigation.navigate("Aparelhos");
     }
 
     return(

@@ -1,23 +1,96 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, TouchableHighlight } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome6';
+import axios from 'axios';
 
 export default function TelaAparelhos({navigation}) {
 
     //tela principal do app, aqui é onde o usuário pode monitorar o estado dos aparelhos conectados ao app.
+
     const [dispositivos, setDispositivos] = useState([]);
+
+    //função que resgata info dos dispositivos para renderização
     const getDispositivos = async () => {
         try {
             const JSONdispositivos = await AsyncStorage.getItem("user_dispositivos");
-            let dispositivos = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : null;
+            let dispositivos = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : [];
 
-            setDispositivos(dispositivos);
+            console.log("dispositivos: ", dispositivos)
 
+            //array de promises que contém nome, id e data dos dispositivos
+            const promises = dispositivos.map( async (dispositivo) => {
+
+                try {
+                    const response = await axios.post(`http://${dispositivo.IP}:8081/zeroconf/info`, {
+                        "deviceid": "", 
+                        "data": {}
+                    }, {
+                        timeout: 5000,
+                    })
+                    return {
+                        nome: dispositivo.nome,
+                        desc: dispositivo.desc,
+                        id: dispositivo.id,
+                        data: response.data.data,
+                        IP: dispositivo.IP
+                    };
+    
+                } catch (apiError) {
+                    console.error(`Erro ao buscar dados do dispositivo ${dispositivo.id}`, apiError);
+                    return {
+                        nome: dispositivo.nome,
+                        desc: dispositivo.desc,
+                        id: dispositivo.id,
+                        data: null,
+                        IP: dispositivo.IP
+                    };
+                }
+            });
+    
+            //espera todos os dados serem resgatados
+            const resultados = await Promise.all(promises);
+    
+            setDispositivos(resultados)
+            console.log("resultados data: ", resultados)
         } catch (error) {
-            Alert.alert("erro", "erro ao resgatar dispositivos");
+            console.log(error)
         }
+    }
+
+    const handleLigar = async (ip, estadoSwitch, index) => {
+
+        let setEstadoSwitch;
+
+        if(estadoSwitch === "on"){
+            setEstadoSwitch = "off"
+        } else if(estadoSwitch === "off"){
+            setEstadoSwitch = "on"
+        } else {
+            setEstadoSwitch = "desconhecido"
+        }
+
+        try {
+            await axios.post(`http://${ip}:8081/zeroconf/switch`, {
+             
+                deviceid: "", 
+                data: {
+                    switch: setEstadoSwitch
+                } 
+        }, {
+            timeout: 5000
+        }) 
+
+        const dispositivosAtt = [...dispositivos];
+        dispositivosAtt[Number(index) - 1].data.switch = setEstadoSwitch;
+        getDispositivos();
+        
+    } catch (error) {
+            Alert.alert("erro", "nao foi possivel ligar o aparelho.")
+        }
+
     }
 
     const getColorPorEstado = estado => {
@@ -30,19 +103,20 @@ export default function TelaAparelhos({navigation}) {
         }
     }
 
-useFocusEffect(
+    //chama a função getDispositivos
+    useFocusEffect(
     useCallback(() => {
         getDispositivos();
-        console.log("tela em foco")
-
+        console.log("tela em foco, data resgatada")
         return() => {
             setDispositivos([])
-            console.log("tela fora de foco")
+            console.log("tela fora de foco, dispositivos limpos")
         }
     }, [])
-)
+    )
 
     return (
+        <ImageBackground style={styles.background} source={require("../assets/prism.png")}>
         <View style={styles.container}>
 
         <TouchableOpacity style={styles.atualizar} onPress={() => navigation.navigate("Adicionar")}>
@@ -52,21 +126,28 @@ useFocusEffect(
         data={dispositivos}
         renderItem={({item}) => {
             return (
-                <TouchableOpacity style={styles.containerAparelho} onPress={() => navigation.navigate("TelaConfig", { item})}>
+                <View style={styles.containerAparelho}>
                     <View style={styles.wrapperEsquerdo}>
-                        <Text style={styles.containerTitulo}>{item.nome}</Text>
-                        <Text style={styles.containerLegendas}>{item.desc}
-                            <Text style={styles.containerLegendas}></Text>
-                            </Text>
-                        <Text style={styles.containerLegendas}> ID: {item.id}</Text>
+                        <Text style={styles.tituloAparelho}>{item.nome}</Text>
+                        <View style={{flexDirection: "row", padding: 1, gap: 6}}>
+                            <TouchableHighlight onPress={() => handleLigar(item.IP, item.data.switch, item.id)} style={styles.botaoLigar}>
+                                <Icon name="power-off" size={18}/>
+                            </TouchableHighlight>
+                            <TouchableHighlight style={styles.botaoConfig} onPress={() => navigation.navigate("TelaConfig", {item})}>
+                                <Icon name="gear" size={18}/>
+                            </TouchableHighlight>
+                        </View>
                     </View>
 
                     <View style={styles.wrapperDireito}>
-                        <Text style={styles.containerLegendas}>CONSUMO: </Text>
-                        <Text style={styles.containerLegendas}>CORRENTE: </Text>
-                        <Text style={styles.containerLegendas}>TENSÃO: </Text>
+                        <View style={{flexDirection: "column", padding: 6, justifyContent: "center", height: "100%", gap: 9}}>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data.switch}</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>
+                        </View>
                     </View>
-                </TouchableOpacity>
+                </View>
             )
         }}
         keyExtractor={item => item.id.toString()}>
@@ -74,13 +155,14 @@ useFocusEffect(
         </FlatList>
 
         </View>
+        </ImageBackground>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#2C3E50",
+        backgroundColor: "transparent",
         paddingLeft: "5%",
         paddingTop: 5
     },
@@ -91,19 +173,13 @@ const styles = StyleSheet.create({
         backgroundColor: "red"
     },
     containerAparelho: {
-        backgroundColor: "#4A6572",
+        backgroundColor: "rgba(169, 169, 169, 0.4)",
         height: 140,
         width: "95%",
-        padding: 6,
         marginVertical: 5,
         borderRadius: 10,
-        gap: 8,
+        borderWidth: 2,
         flexDirection: "row",
-        shadowColor: "gray", // Cor da sombra
-        shadowOffset: { width: 5, height: 5 }, // Offset da sombra
-        shadowOpacity: 0.7, // Opacidade da sombra
-        shadowRadius: 3, // Radius da sombra
-
     },
 
     containerTitulo: {
@@ -119,22 +195,34 @@ const styles = StyleSheet.create({
         fontWeight: "600"
     },
     wrapperEsquerdo: {
-        flex: 3,
-        padding: 8,
-        paddingLeft: 12,
-        justifyContent: "space-evenly",
-        backgroundColor: "rgba(189, 195, 199, 0)",
-        borderRightWidth: 1.2,
-        borderRightColor: "black"
+        flex: 4,
+        backgroundColor: "rgba(245, 245, 220, 0.1)",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 10,
+        borderRadius: 5,
+        borderRightWidth: 1
+
     },
     wrapperDireito: {
         flex: 5,
-        padding: 8,
-        paddingLeft: 14,
-        justifyContent: "space-evenly",
-        backgroundColor: "rgba(189, 195, 199, 0.2)",
-        borderRadius: 16
+        backgroundColor: "transparent",
     },
+    tituloAparelho: {
+        fontSize: 22,
+        fontWeight: "bold",
+        color: "white",
+        paddingBottom: 10
+    },
+    botaoLigar: {
+        flex: 1,
+        height: 40,
+        backgroundColor: "#3CB371",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+
     atualizar: {
         width: "95%",
         height: 50,
@@ -143,6 +231,18 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "green"
+    },
+    background: {
+        flex: 1,
+        resizeMode: "cover"
+    },
+    botaoConfig: {
+        flex: 1,
+        height: 40,
+        backgroundColor: "#4F4F4F",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center"
     }
 })
 

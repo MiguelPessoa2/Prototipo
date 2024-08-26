@@ -1,7 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import TelaHome from "./Home";
-import TelaConfigAparelho from "./AdicionarAparelho";
+import TelaConfigAparelho from "../screens/ConfigAparelho";
 
 const Stack = createStackNavigator();
 
