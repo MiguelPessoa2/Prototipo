@@ -11,6 +11,7 @@ export default function StackNavigator() {
     //configuração da navegação inicial do app, entre tela inicial, login, cadastro, e Home.
 
     return(
+        
         <Stack.Navigator initialRouteName="Login">
             <Stack.Screen name="Cadastro" component={TelaCadastro} options={{headerShown: false}}/>
             <Stack.Screen name="Login" component={TelaLogin} options={{headerShown: false}}/>
