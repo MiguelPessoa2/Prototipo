@@ -44,6 +44,7 @@ export default function TelaLogin({navigation}) {
       }
 
       if((userEmail === emailInput) && (userSenha === senhaInput)){
+        AsyncStorage.setItem("lembrar_senha", isChecked)
         navigation.navigate("NavPrincipal")
 
       } else {
