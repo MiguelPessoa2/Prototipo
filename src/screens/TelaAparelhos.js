@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, TouchableHighlight } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import axios from 'axios';
@@ -11,7 +11,7 @@ export default function TelaAparelhos({navigation}) {
     //tela principal do app, aqui é onde o usuário pode monitorar o estado dos aparelhos conectados ao app.
 
     const [dispositivos, setDispositivos] = useState([]);
-
+    
     //função que resgata info dos dispositivos para renderização
     const getDispositivos = async () => {
         try {
@@ -39,7 +39,7 @@ export default function TelaAparelhos({navigation}) {
                     };
     
                 } catch (apiError) {
-                    console.error(`Erro ao buscar dados do dispositivo ${dispositivo.id}`, apiError);
+                    console.log(`Erro ao buscar dados do dispositivo ${dispositivo.id}`, apiError);
                     return {
                         nome: dispositivo.nome,
                         desc: dispositivo.desc,
@@ -72,25 +72,26 @@ export default function TelaAparelhos({navigation}) {
             setEstadoSwitch = "desconhecido"
         }
 
-        try {
-            await axios.post(`http://${ip}:8081/zeroconf/switch`, {
-             
-                deviceid: "", 
-                data: {
-                    switch: setEstadoSwitch
-                } 
-        }, {
-            timeout: 5000
-        }) 
-
-        const dispositivosAtt = [...dispositivos];
-        dispositivosAtt[Number(index) - 1].data.switch = setEstadoSwitch;
-        getDispositivos();
-        
-    } catch (error) {
-            Alert.alert("erro", "nao foi possivel ligar o aparelho.")
+        if(setEstadoSwitch != "desconhecido"){
+            try {
+                await axios.post(`http://${ip}:8081/zeroconf/switch`, {
+                 
+                    deviceid: "", 
+                    data: {
+                        switch: setEstadoSwitch
+                    } 
+                }, {
+                    timeout: 5000
+                }) 
+    
+            const dispositivosAtt = [...dispositivos];
+            dispositivosAtt[Number(index) - 1].data.switch = setEstadoSwitch;
+            getDispositivos();
+            
+            } catch (error) {
+                Alert.alert("erro", "nao foi possivel ligar o aparelho.")
+            }
         }
-
     }
 
     const getColorPorEstado = estado => {
@@ -141,7 +142,7 @@ export default function TelaAparelhos({navigation}) {
 
                     <View style={styles.wrapperDireito}>
                         <View style={{flexDirection: "column", padding: 6, justifyContent: "center", height: "100%", gap: 9}}>
-                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data.switch}</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data ? item.data.switch : "Desconhecido"}</Text>
                             <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
                             <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
                             <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>

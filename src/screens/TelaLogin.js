@@ -17,7 +17,7 @@ export default function TelaLogin({navigation}) {
     const [senhaInput, setSenhaInput] = useState("")
     const [emailInput, setEmailInput] = useState("")
 
-    const [isChecked, setChecked] = useState(false)
+    const [isChecked, setIsChecked] = useState(false)
 
     //função para resgatar dados de cadastro
     const resgatarData = async () => {
@@ -44,8 +44,8 @@ export default function TelaLogin({navigation}) {
       }
 
       if((userEmail === emailInput) && (userSenha === senhaInput)){
-        AsyncStorage.setItem("lembrar_senha", isChecked)
-        navigation.navigate("NavPrincipal")
+        await AsyncStorage.setItem("lembrar_login", isChecked.toString())
+        navigation.navigate("Home")
 
       } else {
         Alert.alert("Erro ao fazer Login", "usuário ou senha incorreto.")
@@ -93,9 +93,9 @@ export default function TelaLogin({navigation}) {
         </View>
 
         <View style={{flexDirection: "row", padding: 10, width: "90%", justifyContent: "center", alignItems: "center"}}>
-          <Checkbox 
-          value={isChecked} 
-          onValueChange={setChecked} 
+          <Checkbox
+          value={isChecked}
+          onValueChange={(novoValor) => setIsChecked(novoValor)}
           style={{borderRadius: 10, borderColor: "darkorange"}}/>
           <Text style={{color: "gray", fontSize: 18, paddingLeft: 16}}>Deseja lembrar sua senha?</Text>
         </View>

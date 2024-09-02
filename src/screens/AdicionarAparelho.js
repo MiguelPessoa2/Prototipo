@@ -1,19 +1,43 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState } from 'react';
-import {Text, View, StyleSheet, TouchableOpacity, Alert} from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import { useEffect, useState } from 'react';
+import {Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import axios from 'axios';
+import RNPickerSelect from 'react-native-picker-select';
 
 export default function AdicionarAparelho({navigation}) {
 
     const [nome, setNome] = useState("");
     const [desc, setDesc] = useState("");
     const [enderecoIP, setEnderecoIP] = useState("");
+    const [modeloEscolhido, setModeloEscolhido] = useState("");
+    const [firmwareEscolhido, setFirmwareEscolhido] = useState("");
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [firmwares, setFirmwares] = useState([]);
+
+    const modelosDispositivos = [
+        {label: "Sonoff Mini R2", value: "sonoff-mini-r2", firmware: [{label: "Original", value: "original"}, {label: "Tasmota", value: "tasmota"}]},
+        {label: "Sonoff Mini R3", value: "sonoff-mini-r3", firmware: [{label: "Original", value: "original"}, {label: "Tasmota", value: "tasmota"}]},
+        {label: "Sonoff Basic R2", value: "sonoff-basic-r2", firmware: [{label: "Tasmota", value: "tasmota"}]},
+        {label: "Sonoff Basic R3", value: "sonoff-basic-r3", firmware: [{label: "Tasmota", value: "tasmota"}]},
+        {label: "Sonoff Pow R2", value: "sonoff-pow-r2", firmware: [{label: "Tasmota", value: "tasmota"}]},
+        {label: "Sonoff Pow R3 (Origin)", value: "sonoff-pow-r3", firmware: [{label: "Tasmota", value: "tasmota"}]},
+        {label: "Sonoff D1 Dimmer", value: "sonoff-d1-dimmer", firmware: [{label: "Original", value: "original"}, {label: "Tasmota", value: "tasmota"}]}
+    ]
 
     const handleAddDispositivo = async () => {
         
-        try {
+        if(!nome || !enderecoIP || !modeloEscolhido || !firmwareEscolhido){
+            Alert.alert("Erro", "Verifique se todos os campos foram preenchidos corretamente.");
+            return;
+        }
 
+        setIsLoading(true);
+
+        try {
+        
         const resposta = await axios.post(`http://${enderecoIP}:8081/zeroconf/info`, {
             deviceid: "",
             data: {},    
@@ -35,121 +59,160 @@ export default function AdicionarAparelho({navigation}) {
 
             nome: nome,
             desc: desc,
-             IP: enderecoIP,
-             id: novoId,
-             data: {}
+            modelo: modeloEscolhido,
+            firmware: firmwareEscolhido,
+            IP: enderecoIP,
+            id: novoId,
+            data: {}
         }
 
         listaDispositivos.push(dispositivo);
-         AsyncStorage.setItem("user_dispositivos", JSON.stringify(listaDispositivos));
+         await AsyncStorage.setItem("user_dispositivos", JSON.stringify(listaDispositivos));
             
         setNome("");
         setDesc("");
         setEnderecoIP("");
+        setModeloEscolhido("");
+        setFirmwareEscolhido("");
             
         Alert.alert("Sucesso!", "dispositivo cadastrado com sucesso!")
         navigation.navigate("Aparelhos");
 
         } catch (error) {
-            Alert.alert("Erro", "Não foi possivel realizar a requisição");
-
+            Alert.alert("Erro", "Não foi possivel salvar o aparelho. Verifique se o endereço IP está correto e tente novamente.");
+        } finally {
+            setIsLoading(false);
         }
-
     }
 
+    useEffect(() => {
+        const dispEscolhido = modelosDispositivos.find(item => item.value === modeloEscolhido)
+
+        if(dispEscolhido){
+            const firmwaresDisponiveis = dispEscolhido.firmware;
+            setFirmwares(firmwaresDisponiveis);
+        }else{
+            setFirmwares([])
+        }
+
+    }, [modeloEscolhido])
+
     return(
+        <ImageBackground source={require('../assets/prism.png')} style={styles.background}>
+            <KeyboardAvoidingView
+            style={{flex: 1}}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.select({ ios: 60, android: 80 })}>
 
-        <View style={styles.container}>
-            <View style={styles.panel}>
-                
-                <Text style={styles.panelTitulo}>Preencha os campos abaixo para cadastrar um aparelho:</Text>
+            <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.wrapperItem}>
+                    <Text style={styles.label}>Nome do Aparelho:</Text>
+                    <TextInput 
+                    style={{height: 50}} 
+                    placeholder='ex: Lâmpada do quarto' 
+                    placeholderTextColor="#2E2E2E"
+                    value={nome}
+                    onChangeText={setNome}/>
+                </View>
 
-                <Text style={styles.labelInput}>Nome: </Text>
-                <TextInput 
-                style={styles.inputEstilo} 
-                placeholder='Nome do aparelho: '
-                placeholderTextColor="#000000"
-                value={nome}
-                onChangeText={(novoNome) => setNome(novoNome)}
-                >
+                <View style={styles.wrapperItem}>
+                    <Text style={styles.label}>Descrição  (opcional)</Text>
+                    <TextInput 
+                    style={{height: 50}} 
+                    placeholder='ex: Desligar após 23:00' 
+                    placeholderTextColor="#2E2E2E"
+                    value={desc}
+                    onChangeText={setDesc}/>
+                </View>
 
-                </TextInput>
+                <View style={styles.wrapperItem}>
+                    <Text style={styles.label}>Modelo do Dispositivo:</Text>
 
-                <Text style={styles.labelInput}>Descrição: </Text>
-                <TextInput 
-                style={styles.inputEstilo} 
-                placeholder='Descrição do aparelho: '
-                placeholderTextColor="#000000"
-                value={desc}
-                onChangeText={(novoDesc) => setDesc(novoDesc)}
-                >
+                    <RNPickerSelect
+                    onValueChange={(val) => setModeloEscolhido(val)}
+                    items={modelosDispositivos}
+                    darkTheme={true}
+                    placeholder={{
+                        label: "Escolha um Dispositivo",
+                        value: null,
+                    }} />
+                </View>
 
-                </TextInput>
+                <View style={styles.wrapperItem}>
+                    <Text style={styles.label}>Firmware:</Text>
 
-                <Text style={styles.labelInput}>Endereço IP: </Text>
-                <TextInput 
-                style={styles.inputEstilo} 
-                placeholder='Endereço IP do aparelho: '
-                placeholderTextColor="#000000"
-                value={enderecoIP}
-                onChangeText={(novoIP) => setEnderecoIP(novoIP)}
-                >
+                    <RNPickerSelect
+                    onValueChange={(val) => setFirmwareEscolhido(val)}
+                    items={firmwares}
+                    darkTheme={true}
+                    placeholder={{
+                        label: "Escolha um Firmware",
+                        value: null
+                    }} />
+                </View>
 
-                </TextInput>
-                <TouchableOpacity style={styles.botaoEstilo} onPress={handleAddDispositivo}><Text style={styles.labelbotao}>ADICIONAR APARELHO</Text></TouchableOpacity>
-            </View>
-        </View>
+                <View style={styles.wrapperItem}>
+                    <Text style={styles.label}>Endereço IP:</Text>
+                    <TextInput 
+                    style={{height: 50}} 
+                    placeholder='Insira o IP do dispositivo' 
+                    placeholderTextColor="#2E2E2E"
+                    value={enderecoIP}
+                    onChangeText={setEnderecoIP}/>
+                </View>
+
+
+                <TouchableOpacity style={styles.botaoEstilo} onPress={handleAddDispositivo}>
+                    <Text>{isLoading ?  <ActivityIndicator />: <Text>SALVAR</Text>}</Text>
+                </TouchableOpacity>
+            </ScrollView>
+            </KeyboardAvoidingView>
+        </ImageBackground>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: "#2C3E50",
+        flexGrow: 1,
+        backgroundColor: "rgba(105, 105, 105, 0.4)",
+        margin: 20,
+        borderRadius: 5,
         justifyContent: "center",
-        alignItems: "center"
-    },
-    panel: {
-        width: "90%",
-        height: "95%",
-        backgroundColor: "#E0E0E0",
-        justifyContent: "center",
-        paddingLeft: "5%",
-        borderRadius: 15,
-        bordercolor: "black",
-        borderWidth: 1.5,
-        gap: 10
-    },
-    labelInput: {
-        fontSize: 22,
-        color: "#333333",
-        fontWeight: "600"
-    },
-    inputEstilo: {
-        backgroundColor: "#C0C0C0",
-        width: "90%",
-        height: 50,
-        borderRadius: 8,
-        paddingLeft: 10
-    },
+        paddingLeft: 20,
+        paddingTop: 20,
+        gap: 18
+        },
+
     botaoEstilo: {
-        backgroundColor: "#FFA500",
-        width: "90%",
-        height: 50,
+        backgroundColor: "#228B22",
+        width: "94%",
+        height: 65,
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 8,
+        borderWidth: 1,
+        borderColor: "darkgreen",
         marginTop: 15
     },
-    labelbotao: {
-        fontSize: 16,
-        color: "#333333",
-        fontWeight: "500"
+
+    background: {
+        flex: 1,
+        resizeMode: "cover"
     },
-    panelTitulo: {
-        fontSize: 22,
-        color: "#8B4513",
+    wrapperItem: {
+        backgroundColor: "rgba(169, 169, 169, 0.4)",
+        justifyContent: "space-evenly",
+        width: "94%",
+        height: 80,
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: "darkgray",
+        paddingLeft: 8
+    },
+    label: {
         fontWeight: "bold",
-        paddingBottom: 25
+        fontSize: 13,
+        color: "#FF8C00",
+        marginBottom: 6
     }
 })
