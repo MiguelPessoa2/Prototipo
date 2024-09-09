@@ -13,7 +13,7 @@ const Stack = createStackNavigator();
 
 export default function Index() {
   const [lembrarLogin, setLembrarLogin] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const fetchLembrarLogin = async () => {
@@ -31,7 +31,7 @@ export default function Index() {
       }
     };
 
-    fetchLembrarLogin();
+    //fetchLembrarLogin();
     
   }, []);
   

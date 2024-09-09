@@ -1,19 +1,23 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, TouchableHighlight } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, TouchableHighlight, StatusBar, ActivityIndicator } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { useState, useEffect, useCallback, useContext } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function TelaAparelhos({navigation}) {
-
-    //tela principal do app, aqui é onde o usuário pode monitorar o estado dos aparelhos conectados ao app.
+    useEffect(() => {
+        navigation.setParams({titulo: "HOME"})
+    }, [navigation])
 
     const [dispositivos, setDispositivos] = useState([]);
-    
-    //função que resgata info dos dispositivos para renderização
+    const [loading, setLoading] = useState(true);
+
     const getDispositivos = async () => {
+        setLoading(true);
+
         try {
             const JSONdispositivos = await AsyncStorage.getItem("user_dispositivos");
             let dispositivos = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : [];
@@ -57,6 +61,8 @@ export default function TelaAparelhos({navigation}) {
             console.log("resultados data: ", resultados)
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -114,46 +120,65 @@ export default function TelaAparelhos({navigation}) {
             console.log("tela fora de foco, dispositivos limpos")
         }
     }, [])
-    )
+    );
 
     return (
         <ImageBackground style={styles.background} source={require("../assets/prism.png")}>
+        <StatusBar hidden={true} />
         <View style={styles.container}>
 
-        <TouchableOpacity style={styles.atualizar} onPress={() => navigation.navigate("Adicionar")}>
-            <Text style={{color: "#F5F5F5", fontWeight: "600"}}>ADICIONAR APARELHO</Text>
-        </TouchableOpacity>
-        <FlatList
-        data={dispositivos}
-        renderItem={({item}) => {
-            return (
-                <View style={styles.containerAparelho}>
-                    <View style={styles.wrapperEsquerdo}>
-                        <Text style={styles.tituloAparelho}>{item.nome}</Text>
-                        <View style={{flexDirection: "row", padding: 1, gap: 6}}>
-                            <TouchableHighlight onPress={() => handleLigar(item.IP, item.data.switch, item.id)} style={styles.botaoLigar}>
-                                <Icon name="power-off" size={18}/>
-                            </TouchableHighlight>
-                            <TouchableHighlight style={styles.botaoConfig} onPress={() => navigation.navigate("TelaConfig", {item})}>
-                                <Icon name="gear" size={18}/>
-                            </TouchableHighlight>
+        <TouchableOpacity style={styles.botaoEstilo} onPress={() => navigation.navigate("Adicionar")}>
+                    <LinearGradient 
+                    colors={['rgba(0, 100, 0, 0.85)', 'rgba(0, 150, 0, 0.85)', 'rgba(0, 200, 0, 0.85)']}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 1}}
+                    style={{width: "100%", height: "100%", justifyContent: "center", alignItems: "center"}}>
+                    <Text style={{color: "black", fontWeight: "700"}}>ADICIONAR APARELHO</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+        {loading ? (
+            <View style={{justifyContent: "center", alignItems: "center", flex: 1, marginBottom: "80%"}}> 
+            
+            <Text style={styles.loadingText}>Conectando dispositivos...</Text>
+            <ActivityIndicator  style={{marginTop: 10}}/>
+            </View>
+        ) : (
+            <FlatList
+            data={dispositivos}
+            renderItem={({item}) => {
+                return (
+                    <View style={styles.containerAparelho}>
+                        <View style={styles.wrapperEsquerdo}>
+                            <Text style={styles.tituloAparelho}>{item.nome}</Text>
+                            <View style={{flexDirection: "row", padding: 1, gap: 6}}>
+                                <TouchableHighlight onPress={() => handleLigar(item.IP, item.data?.switch, item.id)} style={styles.botaoLigar}>
+                                    <Icon name="power-off" size={18}/>
+                                </TouchableHighlight>
+                                <TouchableHighlight style={styles.botaoConfig} onPress={() => navigation.navigate("TelaConfig", {
+                                    info: item,
+                                    titulo: "Config"
+                                })}>
+                                    <Icon name="gear" size={18}/>
+                                </TouchableHighlight>
+                            </View>
+                        </View>
+    
+                        <View style={styles.wrapperDireito}>
+                            <View style={{flexDirection: "column", padding: 6, justifyContent: "center", height: "100%", gap: 9}}>
+                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data ? item.data.switch : "Desconhecido"}</Text>
+                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
+                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
+                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>
+                            </View>
                         </View>
                     </View>
+                )
+            }}
+            keyExtractor={item => item.id.toString()}>
+    
+            </FlatList>
+        )}
 
-                    <View style={styles.wrapperDireito}>
-                        <View style={{flexDirection: "column", padding: 6, justifyContent: "center", height: "100%", gap: 9}}>
-                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data ? item.data.switch : "Desconhecido"}</Text>
-                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
-                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
-                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>
-                        </View>
-                    </View>
-                </View>
-            )
-        }}
-        keyExtractor={item => item.id.toString()}>
-
-        </FlatList>
 
         </View>
         </ImageBackground>
@@ -234,7 +259,8 @@ const styles = StyleSheet.create({
         backgroundColor: "green"
     },
     background: {
-        flex: 1,
+        width: "100%",
+        height: "100%",
         resizeMode: "cover"
     },
     botaoConfig: {
@@ -244,6 +270,20 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center"
+    },
+    loadingText: {
+        color: "#fff",
+        fontSize: 18,
+        textAlign: "center",
+        marginHorizontal: 20,
+    },
+    botaoEstilo: {
+        backgroundColor: "rgba(255, 165, 0, 0.7)",
+        width: "94%",
+        height: 60,
+        borderWidth: 2,
+        borderColor: "darkgreen",
+        marginVertical: 10
     }
 })
 

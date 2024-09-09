@@ -4,8 +4,13 @@ import {Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, Activi
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import axios from 'axios';
 import RNPickerSelect from 'react-native-picker-select';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function AdicionarAparelho({navigation}) {
+
+    useEffect(() => {
+        navigation.setParams({titulo: "ADICIONAR"})
+    }, [navigation])
 
     const [nome, setNome] = useState("");
     const [desc, setDesc] = useState("");
@@ -60,7 +65,6 @@ export default function AdicionarAparelho({navigation}) {
             nome: nome,
             desc: desc,
             modelo: modeloEscolhido,
-            firmware: firmwareEscolhido,
             IP: enderecoIP,
             id: novoId,
             data: {}
@@ -76,7 +80,7 @@ export default function AdicionarAparelho({navigation}) {
         setFirmwareEscolhido("");
             
         Alert.alert("Sucesso!", "dispositivo cadastrado com sucesso!")
-        navigation.navigate("Aparelhos");
+        navigation.navigate("Aparelhos", {titulo: "HOME"});
 
         } catch (error) {
             Alert.alert("Erro", "Não foi possivel salvar o aparelho. Verifique se o endereço IP está correto e tente novamente.");
@@ -102,9 +106,11 @@ export default function AdicionarAparelho({navigation}) {
             <KeyboardAvoidingView
             style={{flex: 1}}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.select({ ios: 60, android: 80 })}>
-
+            keyboardVerticalOffset={Platform.select({ ios: 60, android: 80, web: null })}>
+            
             <ScrollView contentContainerStyle={styles.container}>
+            <Text style={styles.titulo}>Preencha os campos abaixo para adicionar um novo aparelho</Text>
+
                 <View style={styles.wrapperItem}>
                     <Text style={styles.label}>Nome do Aparelho:</Text>
                     <TextInput 
@@ -134,23 +140,10 @@ export default function AdicionarAparelho({navigation}) {
                     darkTheme={true}
                     placeholder={{
                         label: "Escolha um Dispositivo",
-                        value: null,
+                        value: "",
                     }} />
                 </View>
-
-                <View style={styles.wrapperItem}>
-                    <Text style={styles.label}>Firmware:</Text>
-
-                    <RNPickerSelect
-                    onValueChange={(val) => setFirmwareEscolhido(val)}
-                    items={firmwares}
-                    darkTheme={true}
-                    placeholder={{
-                        label: "Escolha um Firmware",
-                        value: null
-                    }} />
-                </View>
-
+                
                 <View style={styles.wrapperItem}>
                     <Text style={styles.label}>Endereço IP:</Text>
                     <TextInput 
@@ -158,12 +151,19 @@ export default function AdicionarAparelho({navigation}) {
                     placeholder='Insira o IP do dispositivo' 
                     placeholderTextColor="#2E2E2E"
                     value={enderecoIP}
-                    onChangeText={setEnderecoIP}/>
+                    onChangeText={setEnderecoIP}
+                    keyboardType='default'/>
                 </View>
 
 
                 <TouchableOpacity style={styles.botaoEstilo} onPress={handleAddDispositivo}>
-                    <Text>{isLoading ?  <ActivityIndicator />: <Text>SALVAR</Text>}</Text>
+                    <LinearGradient 
+                    colors={['rgba(0, 100, 0, 0.85)', 'rgba(0, 150, 0, 0.85)', 'rgba(0, 200, 0, 0.85)']}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 1}}
+                    style={{width: "100%", height: "100%", borderRadius: 50, justifyContent: "center", alignItems: "center"}}>
+                    <Text style={{color: "black", fontWeight: "700"}}>SALVAR</Text>
+                    </LinearGradient>
                 </TouchableOpacity>
             </ScrollView>
             </KeyboardAvoidingView>
@@ -184,19 +184,18 @@ const styles = StyleSheet.create({
         },
 
     botaoEstilo: {
-        backgroundColor: "#228B22",
+        backgroundColor: "rgba(255, 165, 0, 0.7)",
         width: "94%",
-        height: 65,
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 8,
-        borderWidth: 1,
+        height: 60,
+        borderRadius: 50,
+        borderWidth: 2,
         borderColor: "darkgreen",
-        marginTop: 15
+        marginTop: 20
     },
 
     background: {
-        flex: 1,
+        width: "100%",
+        height: "100%",
         resizeMode: "cover"
     },
     wrapperItem: {
@@ -214,5 +213,28 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: "#FF8C00",
         marginBottom: 6
+    },
+    titulo: {
+        color: "#F5F5F5",
+        fontSize: 18,
+        fontWeight: "700",
+        marginBottom: 25,
+        marginRight: 30,
+        textAlign: 'center'
     }
 })
+
+/*       
+<View style={styles.wrapperItem}>
+<Text style={styles.label}>Firmware:</Text>
+
+<RNPickerSelect
+onValueChange={(val) => setFirmwareEscolhido(val)}
+items={firmwares}
+darkTheme={true}
+placeholder={{
+    label: "Escolha um Firmware",
+    value: null
+}} />
+</View>
+*/

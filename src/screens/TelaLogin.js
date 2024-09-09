@@ -1,8 +1,9 @@
-import {Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, Dimensions} from 'react-native';
+import {Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground, StatusBar} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, useCallback } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import Checkbox from 'expo-checkbox';
+import {LinearGradient} from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function TelaLogin({navigation}) {
@@ -45,7 +46,7 @@ export default function TelaLogin({navigation}) {
 
       if((userEmail === emailInput) && (userSenha === senhaInput)){
         await AsyncStorage.setItem("lembrar_login", isChecked.toString())
-        navigation.navigate("Home")
+        navigation.navigate("Home", {titulo: "HOME"})
 
       } else {
         Alert.alert("Erro ao fazer Login", "usuário ou senha incorreto.")
@@ -61,8 +62,16 @@ export default function TelaLogin({navigation}) {
 
     return(
     <ImageBackground source={require('../assets/prism.png')} style={styles.background}>
+      <StatusBar hidden={true} />
     <View style={styles.container}>
-        <Icon name="bolt" size={100} color="#FFB300" style={{paddingBottom: 50}}/>
+
+        <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 10, marginBottom: 50}}>
+          <Icon name="bolt" size={70} color="#FFB300"/>
+              <Text style={styles.titulo}>ESmartHome</Text>
+        </View>
+
+        <Text style={styles.text3}>Faça Login para continuar</Text>
+
         <View style={styles.wrapperInput}>
           <Icon name="user" style={{flex: 1}} size={24}/>
 
@@ -92,29 +101,23 @@ export default function TelaLogin({navigation}) {
           </TextInput>
         </View>
 
-        <View style={{flexDirection: "row", padding: 10, width: "90%", justifyContent: "center", alignItems: "center"}}>
-          <Checkbox
-          value={isChecked}
-          onValueChange={(novoValor) => setIsChecked(novoValor)}
-          style={{borderRadius: 10, borderColor: "darkorange"}}/>
-          <Text style={{color: "gray", fontSize: 18, paddingLeft: 16}}>Deseja lembrar sua senha?</Text>
+        <TouchableOpacity style={styles.cadastrar} onPress={handleLogin}>
+          <LinearGradient 
+          colors={['rgba(0, 100, 0, 0.85)', 'rgba(0, 150, 0, 0.85)', 'rgba(0, 200, 0, 0.85)']}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 1}}
+          style={{width: "100%", height: "100%", borderRadius: 25, justifyContent: "center", alignItems: "center"}}>
+          <Text style={{color: "black", fontWeight: "700"}}>ENTRAR</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <View style={{flexDirection: "row", gap: 5}}>
+          <Text style={styles.text}>Não possui uma conta?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}><Text style={styles.text2}>Cadastrar-se</Text></TouchableOpacity>
         </View>
 
-
-            <TouchableOpacity style={styles.cadastrar} onPress={handleLogin}>
-                <Text style={{color: "black", fontWeight: "700"}}>ENTRAR</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.criar} onPress={() => navigation.navigate("Cadastro")}>
-                <Text style={{color: "black", fontWeight: "700"}}>CRIAR CONTA</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.deletar} onPress={async () => await AsyncStorage.clear()}>
-                <Text style={{color: "black", fontWeight: "700"}}>DELETAR DADOS</Text>
-            </TouchableOpacity>
-
-        </View>
-        </ImageBackground>
+    </View>
+    </ImageBackground>
     )
 }
 
@@ -138,14 +141,11 @@ const styles = StyleSheet.create({
       },
       cadastrar: {
         backgroundColor: "rgba(255, 165, 0, 0.7)",
-        width: "60%",
+        width: "88%",
         height: 60,
         borderRadius: 50,
         borderWidth: 2,
-        borderColor: "orange",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 30
+        borderColor: "darkgreen",
       },
       textoCadastrar: {
         color: "#D3D3D3",
@@ -170,32 +170,40 @@ const styles = StyleSheet.create({
         height: "100%",
         resizeMode: 'cover', // Ajusta a imagem para cobrir a tela inteira
       },
-      criar: {
-        backgroundColor: "rgba(76, 175, 80, 0.7)",
-        width: "60%",
-        height: 60,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: "darkgreen",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 5
-      },
+
       wrapperCheckBox: {
         flexDirection: "row",
         width: "89%",
         height: "fot-content",
         padding: 8
       },
-      deletar: {
-        backgroundColor: "rgba(255, 0, 0, 0.7)",
-        width: "60%",
-        height: 60,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: "rgb(139, 0, 0)",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 5
+
+      titulo: {
+        color: "#FFB300",
+        fontWeight: "bold",
+        fontSize: 25
+      },
+      text: {
+        color: '#A9A9A9', // Texto claro
+        fontSize: 15, // Tamanho do texto
+        fontWeight: '300', // Peso da fonte mais leve
+        textAlign: 'center', // Centraliza o texto
+        letterSpacing: 0.5, // Espaçamento entre letras
+        fontWeight: "500",
+      },
+      text2: {
+        color: '#00BFFF', // Texto claro
+        fontSize: 15, // Tamanho do texto
+        fontWeight: '300', // Peso da fonte mais leve
+        textAlign: 'center', // Centraliza o texto
+        letterSpacing: 0.5, // Espaçamento entre letras
+        fontWeight: "500",
+      },
+      text3: {
+        color: "#F5F5F5",
+        fontSize: 22,
+        fontFamily: "roboto",
+        fontWeight: "700",
+        marginBottom: 40
       }
 })

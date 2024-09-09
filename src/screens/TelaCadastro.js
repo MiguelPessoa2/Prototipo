@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from "react-native-vector-icons/FontAwesome6";
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function TelaCadastro ({navigation}){
 
@@ -63,6 +64,7 @@ export default function TelaCadastro ({navigation}){
       setSenhaValida(false);
     }
 
+
     if(email.length >= 4){
       setEmailValido(true)
     } else {
@@ -80,7 +82,10 @@ export default function TelaCadastro ({navigation}){
   return (
     <ImageBackground source={require("../assets/prism.png")} style={styles.background}>
     <View style={styles.container}>
-    <Icon name="bolt" size={100} color="#FFB300" style={{paddingBottom: 50}}/>
+    <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 10, marginBottom: 30}}>
+          <Icon name="bolt" size={50} color="#FFB300"/>
+              <Text style={styles.titulo2}>ESmartHome</Text>
+        </View>
 
       <Text style={styles.titulo}>CADASTRO</Text>
 
@@ -146,8 +151,21 @@ export default function TelaCadastro ({navigation}){
       </View>
 
       <TouchableOpacity style={styles.cadastrar} onPress={handleCadastro}>
-        <Text style={styles.textoCadastrar}> CADASTRAR</Text>
+        <LinearGradient
+        colors={['rgba(0, 100, 0, 0.85)', 'rgba(0, 150, 0, 0.85)', 'rgba(0, 200, 0, 0.85)']}
+        style={{width: "100%", height: "100%", borderRadius: 25, justifyContent: "center", alignItems: "center"}}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        >
+          <Text style={{color: "black", fontWeight: "700"}}> CADASTRAR</Text>
+
+        </LinearGradient>
       </TouchableOpacity>
+
+      <View style={{flexDirection: "row", gap: 5}}>
+          <Text style={styles.text}>Já possui uma conta?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}><Text style={styles.text2}>Fazer Login</Text></TouchableOpacity>
+        </View>
     </View>
     </ImageBackground>
   );
@@ -204,7 +222,7 @@ const styles = StyleSheet.create({
     borderColor: "darkgreen",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 5
+    marginTop: 10
   },
 
   textoCadastrar: {
@@ -213,13 +231,37 @@ const styles = StyleSheet.create({
   },
 
   titulo: {
-    color: "#E6E6E6",
-    fontSize: 26,
-    fontWeight: "600",
-    textDecorationLine: "underline" 
+    color: "#F5F5F5",
+    fontSize: 30,
+    fontFamily: "roboto",
+    fontWeight: "700",
+    marginBottom: 40
   },
-        background: {
-        flex: 1, // Ocupa todo o espaço disponível na tela
-        resizeMode: 'cover', // Ajusta a imagem para cobrir a tela inteira
-      },
+  background: {
+    width: "100%",
+    height: "100%",
+    resizeMode: 'cover', // Ajusta a imagem para cobrir a tela inteira
+  },
+  
+  titulo2: {
+    color: "#FFB300",
+    fontWeight: "bold",
+    fontSize: 23
+  },
+  text: {
+    color: '#A9A9A9', // Texto claro
+    fontSize: 15, // Tamanho do texto
+    fontWeight: '300', // Peso da fonte mais leve
+    textAlign: 'center', // Centraliza o texto
+    letterSpacing: 0.5, // Espaçamento entre letras
+    fontWeight: "500",
+  },
+  text2: {
+    color: '#00BFFF', // Texto claro
+    fontSize: 15, // Tamanho do texto
+    fontWeight: '300', // Peso da fonte mais leve
+    textAlign: 'center', // Centraliza o texto
+    letterSpacing: 0.5, // Espaçamento entre letras
+    fontWeight: "500",
+  },
 });
