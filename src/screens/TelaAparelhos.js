@@ -6,68 +6,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ConsumoContext } from '../context/contextConsumo';
 
 export default function TelaAparelhos({navigation}) {
+    const { contextDispositivos, setContextDispositivos, getContextDispositivos} = useContext(ConsumoContext);
+
     useEffect(() => {
         navigation.setParams({titulo: "HOME"})
     }, [navigation])
 
-    const [dispositivos, setDispositivos] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const getDispositivos = async () => {
-        setLoading(true);
-
-        try {
-            const JSONdispositivos = await AsyncStorage.getItem("user_dispositivos");
-            let dispositivos = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : [];
-
-            console.log("dispositivos: ", dispositivos)
-
-            //array de promises que contém nome, id e data dos dispositivos
-            const promises = dispositivos.map( async (dispositivo) => {
-
-                try {
-                    const response = await axios.post(`http://${dispositivo.IP}:8081/zeroconf/info`, {
-                        "deviceid": "", 
-                        "data": {}
-                    }, {
-                        timeout: 5000,
-                    })
-                    return {
-                        nome: dispositivo.nome,
-                        desc: dispositivo.desc,
-                        id: dispositivo.id,
-                        data: response.data.data,
-                        IP: dispositivo.IP
-                    };
-    
-                } catch (apiError) {
-                    console.log(`Erro ao buscar dados do dispositivo ${dispositivo.id}`, apiError);
-                    return {
-                        nome: dispositivo.nome,
-                        desc: dispositivo.desc,
-                        id: dispositivo.id,
-                        data: null,
-                        IP: dispositivo.IP
-                    };
-                }
-            });
-    
-            //espera todos os dados serem resgatados
-            const resultados = await Promise.all(promises);
-    
-            setDispositivos(resultados)
-            console.log("resultados data: ", resultados)
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false);
-        }
-    }
-
     const handleLigar = async (ip, estadoSwitch, index) => {
-
+        console.log(ip, estadoSwitch, index)
         let setEstadoSwitch;
 
         if(estadoSwitch === "on"){
@@ -90,9 +39,9 @@ export default function TelaAparelhos({navigation}) {
                     timeout: 5000
                 }) 
     
-            const dispositivosAtt = [...dispositivos];
+            const dispositivosAtt = [...contextDispositivos];
             dispositivosAtt[Number(index) - 1].data.switch = setEstadoSwitch;
-            getDispositivos();
+            getContextDispositivos();
             
             } catch (error) {
                 Alert.alert("erro", "nao foi possivel ligar o aparelho.")
@@ -113,12 +62,9 @@ export default function TelaAparelhos({navigation}) {
     //chama a função getDispositivos
     useFocusEffect(
     useCallback(() => {
-        getDispositivos();
+        getContextDispositivos();
         console.log("tela em foco, data resgatada")
-        return() => {
-            setDispositivos([])
-            console.log("tela fora de foco, dispositivos limpos")
-        }
+
     }, [])
     );
 
@@ -136,7 +82,7 @@ export default function TelaAparelhos({navigation}) {
                     <Text style={{color: "black", fontWeight: "700"}}>ADICIONAR APARELHO</Text>
                     </LinearGradient>
                 </TouchableOpacity>
-        {loading ? (
+        {!contextDispositivos ? (
             <View style={{justifyContent: "center", alignItems: "center", flex: 1, marginBottom: "80%"}}> 
             
             <Text style={styles.loadingText}>Conectando dispositivos...</Text>
@@ -144,7 +90,7 @@ export default function TelaAparelhos({navigation}) {
             </View>
         ) : (
             <FlatList
-            data={dispositivos}
+            data={contextDispositivos}
             renderItem={({item}) => {
                 return (
                     <View style={styles.containerAparelho}>

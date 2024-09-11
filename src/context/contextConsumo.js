@@ -6,9 +6,9 @@ export const ConsumoContext = createContext();
 
 export const ProviderConsumo = ({children}) => {
 
-    const [dispositivos, setDispositivos] = useState([])
+    const [contextDispositivos, setContextDispositivos] = useState([])
 
-    const getDispositivos = async () => {
+    const getContextDispositivos = async () => {
         try {
             const JSONdispositivos = await AsyncStorage.getItem("user_dispositivos");
             let dispositivosArmazenados = JSONdispositivos !== null? JSON.parse(JSONdispositivos) : [];
@@ -48,26 +48,26 @@ export const ProviderConsumo = ({children}) => {
             //espera todos os dados serem resgatados
             const resultados = await Promise.all(promises);
     
-            setDispositivos(resultados)
+            setContextDispositivos(resultados)
             console.log("resultados data: ", resultados)
         } catch (error) {
             console.log(error)
         }
     };
-    /*
+    
     useEffect(() => {
 
-        getDispositivos();
+        getContextDispositivos();
 
-        const intervalId = setInterval(getDispositivos, 5000);
+        const intervalId = setInterval(getContextDispositivos, 50000);
 
         return () => clearInterval(intervalId);
 
     }, [])
-    */
+    
 
     return(
-        <ConsumoContext.Provider value={{ dispositivos, getDispositivos }}>
+        <ConsumoContext.Provider value={{ contextDispositivos, setContextDispositivos, getContextDispositivos }}>
             {children}
         </ConsumoContext.Provider>
     )

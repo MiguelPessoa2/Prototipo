@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import axios from 'axios';
@@ -34,7 +34,7 @@ export default function AdicionarAparelho({navigation}) {
 
     const handleAddDispositivo = async () => {
         
-        if(!nome || !enderecoIP || !modeloEscolhido || !firmwareEscolhido){
+        if(!nome || !enderecoIP || !modeloEscolhido){
             Alert.alert("Erro", "Verifique se todos os campos foram preenchidos corretamente.");
             return;
         }
