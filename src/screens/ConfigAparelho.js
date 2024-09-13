@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TouchableOpacity, ScrollView, ImageBackground, TextInput} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, ScrollView, ImageBackground, TextInput, Alert} from 'react-native';
 import React, {useEffect, useState, useContext, useCallback} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,7 +13,11 @@ export default function ConfigAparelho({ navigation, route }) {
     const [dispositivoSelecionado, setDispositivoSelecionado] = useState();
     const [editOptionsVisible, setEditOptionsVisible] = useState(false);
 
-    const { id } = route.params;
+    const [editNome, setEditNome] = useState("");
+    const [editDesc, setEditDesc] = useState("");
+
+    //mudar para route.params depois
+    const id = 5;
 
     //função que retorna o objeto do dispositivo selecionado
     const encontrarDispositivo = (array, id) => {
@@ -61,6 +65,28 @@ export default function ConfigAparelho({ navigation, route }) {
 
     };
 
+    //função para editar os dados do dispositivo
+    const handleEdit = async() => {
+        try {
+            const JSONdispArmazenados = await AsyncStorage.getItem("user_dispositivos");
+            const dispArmazenados = JSON.parse(JSONdispArmazenados);
+
+            const dispositivosAtt = dispArmazenados.map(obj => 
+                obj.id == id ? {...obj, nome: editNome, desc: editDesc} : obj
+            )
+
+            await AsyncStorage.setItem("user_dispositivos", JSON.stringify(dispositivosAtt));
+            Alert.alert("Sucesso!", `Nome alterado para ${editNome}, descrição alterada para ${editDesc}.`)
+            setEditOptionsVisible(false);
+        } catch (error) {
+            console.error("erro ao editar dispositivo.");
+
+        } finally {
+            setEditNome("");
+            setEditDesc("");
+        }
+    }
+
     //ajustar titulo do header
     useEffect(() => {
         navigation.setParams({titulo: "DETALHES"})
@@ -105,17 +131,37 @@ export default function ConfigAparelho({ navigation, route }) {
                     </LinearGradient>
 
                         ) : (
-                            <>
-                            <TextInput 
-                            style={styles.inputEdit}
-                            placeholder="Nome: "
-                            placeholderTextColor="black" />
+                            <LinearGradient 
+                            colors={['#E0E0E0', '#B3B3B3', '#A0A0A0']}
+                            start={{x: 0, y: 0}}
+                            end={{x: 1, y: 1}}
+                            style={{flex: 1, padding: 12}} >
+                                <TextInput 
+                                style={styles.inputEdit}
+                                placeholder="Nome: "
+                                placeholderTextColor="black"
+                                value={editNome}
+                                onChangeText={setEditNome} />
 
-                            <TextInput 
-                            style={styles.inputEdit}
-                            placeholder='Descrição'
-                            placeholderTextColor="black" />
-                            </>
+                                <TextInput 
+                                style={styles.inputEdit}
+                                placeholder='Descrição'
+                                placeholderTextColor="black"
+                                value={editDesc}
+                                onChangeText={setEditDesc} />
+
+                                <View style={{flexDirection: "row", flex: 1, gap: 8}}>
+                                    <TouchableOpacity style={styles.btnCancelar} onPress={() => setEditOptionsVisible(false)}>
+                                    <Text style={{fontWeight: "bold"}}>CANCELAR</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.btnSalvar} onPress={handleEdit}>
+                                    <Text style={{fontWeight: "bold"}}>SALVAR</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </LinearGradient>
+
+                            
                         )}
 
                 </View>
@@ -225,6 +271,9 @@ export default function ConfigAparelho({ navigation, route }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        width: "100%",
+        height: "100%",
+        resizeMode: "cover",
         alignItems: "center",
    },
 
@@ -309,7 +358,7 @@ const styles = StyleSheet.create({
 
       },
       switch: {
-        width: 80,
+        width: "100%",
         height: 80,
         backgroundColor: "#FF4C4C",
         borderRadius: 8,
@@ -319,11 +368,11 @@ const styles = StyleSheet.create({
         alignItems: "center"
       },
       inputEdit: {
-        width: "100%",
-        height: 50,
-        backgroundColor: "white",
+        flex: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
+        borderWidth: 4,
+        borderColor: "gray",
         marginBottom: 6,
-        borderRadius: 6,
         paddingLeft: 10
       },
       deletar: {
@@ -336,5 +385,21 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 20,
         marginLeft: "5%"
+      },
+      btnCancelar: {
+        flex: 1,
+        backgroundColor: "#4CFF4C",
+        borderWidth: 4,
+        borderColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
+      },
+      btnSalvar: {
+        flex: 1,
+        backgroundColor: "#FF8C4C",
+        borderWidth: 4,
+        borderColor: "gray",
+        justifyContent: "center",
+        alignItems: "center"
       }
 })

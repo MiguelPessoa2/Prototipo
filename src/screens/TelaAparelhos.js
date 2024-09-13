@@ -73,7 +73,7 @@ export default function TelaAparelhos({navigation}) {
         <StatusBar hidden={true} />
         <View style={styles.container}>
 
-        <TouchableOpacity style={styles.botaoEstilo} onPress={() => navigation.navigate("Adicionar")}>
+        <TouchableOpacity style={styles.botaoEstilo} onPress={() => navigation.navigate("TelaConfig")}>
                     <LinearGradient 
                     colors={['rgba(0, 100, 0, 0.85)', 'rgba(0, 150, 0, 0.85)', 'rgba(0, 200, 0, 0.85)']}
                     start={{x: 0, y: 0}}
