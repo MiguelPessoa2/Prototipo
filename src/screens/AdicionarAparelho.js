@@ -84,7 +84,6 @@ export default function AdicionarAparelho({navigation}) {
 
         } catch (error) {
             Alert.alert("Erro", "Não foi possivel salvar o aparelho. Verifique se o endereço IP está correto e tente novamente.");
-            navigation.navigate("TelaConfig", {titulo: "DETALHES"})
         } finally {
             setIsLoading(false);
         }

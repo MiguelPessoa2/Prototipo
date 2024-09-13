@@ -49,7 +49,6 @@ export const ProviderConsumo = ({children}) => {
             const resultados = await Promise.all(promises);
     
             setContextDispositivos(resultados)
-            console.log("resultados data: ", resultados)
         } catch (error) {
             console.log(error)
         }

@@ -101,8 +101,7 @@ export default function TelaAparelhos({navigation}) {
                                     <Icon name="power-off" size={18}/>
                                 </TouchableHighlight>
                                 <TouchableHighlight style={styles.botaoConfig} onPress={() => navigation.navigate("TelaConfig", {
-                                    info: item,
-                                    titulo: "Config"
+                                    id: item.id
                                 })}>
                                     <Icon name="gear" size={18}/>
                                 </TouchableHighlight>
