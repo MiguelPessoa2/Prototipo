@@ -17,7 +17,7 @@ export default function ConfigAparelho({ navigation, route }) {
     const [editDesc, setEditDesc] = useState("");
 
     //mudar para route.params depois
-    const id = 5;
+    const { id } = route.params
 
     //função que retorna o objeto do dispositivo selecionado
     const encontrarDispositivo = (array, id) => {
@@ -26,31 +26,40 @@ export default function ConfigAparelho({ navigation, route }) {
 
     //função para ligar e desligar o dispositivo
     const handleSwitch = async() => {
+
         const resposta = await axios.post(`http://${dispositivoSelecionado.IP}:8081/zeroconf/info`, {
             deviceid: "",
             data: {},    
         }, {
             timeout: 5000,
         });
-        let estadoSwitch = resposta.data.data.switch
-        if(estadoSwitch == "on"){
+
+        let estadoSwitch = resposta.data.data?.switch;
+
+        if (estadoSwitch === "on") {
             await axios.post(`http://${dispositivoSelecionado.IP}:8081/zeroconf/switch`, {
                 deviceid: "",
                 data: {
-                    switch: "off"
-                },    
+                    switch: "off",
+                },
             });
-            return
-        };
-        if(estadoSwitch == "off") {
+        } else {
             await axios.post(`http://${dispositivoSelecionado.IP}:8081/zeroconf/switch`, {
                 deviceid: "",
                 data: {
-                    switch: "on"
-                }
-            })
-            return
+                    switch: "on",
+                },
+            });
         }
+
+        // Atualiza o estado local após a mudança
+        setDispositivoSelecionado((prevState) => ({
+            ...prevState,
+            data: {
+                ...prevState.data,
+                switch: estadoSwitch
+            },
+        }));
     };
 
     //função para deletar o dispositivo
@@ -87,26 +96,16 @@ export default function ConfigAparelho({ navigation, route }) {
         }
     }
 
-    //ajustar titulo do header
-    useEffect(() => {
-        navigation.setParams({titulo: "DETALHES"})
-    }, [navigation]);
-
     //carregar dispositivo selecionado ao entrar em foco, chama a função encotrarDispositivo
     useFocusEffect(
         useCallback(() => {
             setDispositivoSelecionado(encontrarDispositivo(contextDispositivos, id));
-
-            return () => {
-                setDispositivoSelecionado(undefined);
-            };
-
+            console.log("aaa", dispositivoSelecionado)
         }, [])
         );
 
     return(
         <ImageBackground source={require("../assets/prism.png")} style={styles.container}>
-            {id ? (
             <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}>
@@ -175,7 +174,7 @@ export default function ConfigAparelho({ navigation, route }) {
                         <Text style={{fontWeight: "bold", fontSize: 18}}>SWITCH</Text>
                         <View style={{alignItems: "center"}}>
                             <Text>ESTADO</Text>
-                            <Text>OFF</Text>
+                            <Text>{dispositivoSelecionado?.data?.switch}</Text>
                         </View>
                         <TouchableOpacity style={styles.switch} onPress={handleSwitch}>
                             <Icon name="power-off" size={24} color="#000" />
@@ -245,23 +244,6 @@ export default function ConfigAparelho({ navigation, route }) {
             </TouchableOpacity>
 
             </ScrollView>
-            ) : (
-                <>
-                <Text style={styles.text}>Parece que você chegou aqui por acidente!</Text>
-                <Text style={styles.text}>Pressione o botão abaixo para voltar.</Text>
-                <TouchableOpacity onPress={() => navigation.navigate("Aparelhos", {titulo: "HOME"})} style={styles.btnVoltar}>
-                <LinearGradient 
-                    colors={['rgba(150, 0, 0, 0.85)', 'rgba(200, 0, 0, 0.85)', 'rgba(255, 0, 0, 0.85)']}
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
-                    style={{width: "100%", height: "100%", borderRadius: 50, justifyContent: "center", alignItems: "center"}}>
-                    <Text style={{color: "black", fontWeight: "700"}}>VOLTAR</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-                </>
-            )}
-
-
         </ImageBackground>
 
 

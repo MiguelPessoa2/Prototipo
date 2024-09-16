@@ -1,7 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View, StyleSheet, TouchableOpacity, Alert, ImageBackground, TouchableHighlight, StatusBar, ActivityIndicator } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useEffect, useCallback, useContext } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import axios from 'axios';
@@ -73,7 +72,7 @@ export default function TelaAparelhos({navigation}) {
         <StatusBar hidden={true} />
         <View style={styles.container}>
 
-        <TouchableOpacity style={styles.botaoEstilo} onPress={() => navigation.navigate("TelaConfig")}>
+        <TouchableOpacity style={styles.botaoEstilo} onPress={() => navigation.navigate("Adicionar")}>
                     <LinearGradient 
                     colors={['rgba(0, 100, 0, 0.85)', 'rgba(0, 150, 0, 0.85)', 'rgba(0, 200, 0, 0.85)']}
                     start={{x: 0, y: 0}}
@@ -109,12 +108,19 @@ export default function TelaAparelhos({navigation}) {
                         </View>
     
                         <View style={styles.wrapperDireito}>
+                            {item.data? (
                             <View style={{flexDirection: "column", padding: 6, justifyContent: "center", height: "100%", gap: 9}}>
-                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data ? item.data.switch : "Desconhecido"}</Text>
-                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
-                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
-                                <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>
-                            </View>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data}</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>
+                        </View>
+                            ) : (
+                                <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+                                    <Text style={styles.noResponse}>SEM RESPOSTA</Text>
+                                </View>
+                            )}
+
                         </View>
                     </View>
                 )
@@ -229,48 +235,11 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: "darkgreen",
         marginVertical: 10
+    },
+    noResponse: {
+        color: "black",
+        fontSize: 26,
+        textAlign: "center",
+        fontWeight: "bold"
     }
 })
-
-    //exemplo de dados do dispositivo:
-
-    /*const DISPOSITIVOS = [
-        {
-            id: '1',
-            details: {
-                nome: "Sonoff 1",
-                desc: "desc 1",
-                IP: "192.168.0.1",
-                estado: "ON",
-                consumoEnergia: "150W",
-                corrente: "0.12A",
-                tensao: "110V",
-            }
-        },
-        {
-            id: '2',
-            details: {
-                nome: "Sonoff 2",
-                desc: "desc 2",
-                IP: "192.168.0.2",
-                estado: "OFF",
-                consumoEnergia: "30W",
-                corrente: "1.4A",
-                tensao: "110V",
-            }
-        },
-        {
-            id: '3',
-            details: {
-                nome: "Sonoff 3",
-                desc: "desc 3",
-                IP: "192.168.0.3",
-                estado: "ON",
-                consumoEnergia: "85W",
-                corrente: "0.68A",
-                tensao: "220V",
-
-            }
-        },
-    ]
-        */

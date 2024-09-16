@@ -36,6 +36,7 @@ export default function AdicionarAparelho({navigation}) {
         
         if(!nome || !enderecoIP || !modeloEscolhido){
             Alert.alert("Erro", "Verifique se todos os campos foram preenchidos corretamente.");
+            console.log("aaa")
             return;
         }
 
@@ -84,6 +85,7 @@ export default function AdicionarAparelho({navigation}) {
 
         } catch (error) {
             Alert.alert("Erro", "Não foi possivel salvar o aparelho. Verifique se o endereço IP está correto e tente novamente.");
+            console.log("AAA")
         } finally {
             setIsLoading(false);
         }
