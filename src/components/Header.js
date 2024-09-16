@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     titulo: {
       color: "#FFB300",
       fontWeight: "bold",
-      fontSize: 16,
+      fontSize: 14,
       textShadowColor: '#000', 
       textShadowOffset: { width: -1, height: 1 }, 
       textShadowRadius: 10,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     titulo2: {
       color: "#F5F5F5",
       fontWeight: "bold",
-      fontSize: 20,
+      fontSize: 18,
       textShadowColor: '#000', 
       textShadowOffset: { width: -1, height: 1 }, 
       textShadowRadius: 10,

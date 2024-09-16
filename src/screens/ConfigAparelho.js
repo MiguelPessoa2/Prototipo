@@ -151,11 +151,11 @@ export default function ConfigAparelho({ navigation, route }) {
 
                                 <View style={{flexDirection: "row", flex: 1, gap: 8}}>
                                     <TouchableOpacity style={styles.btnCancelar} onPress={() => setEditOptionsVisible(false)}>
-                                    <Text style={{fontWeight: "bold"}}>CANCELAR</Text>
+                                    <Text style={{fontWeight: "bold", fontSize: 10}}>CANCELAR</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity style={styles.btnSalvar} onPress={handleEdit}>
-                                    <Text style={{fontWeight: "bold"}}>SALVAR</Text>
+                                    <Text style={{fontWeight: "bold", fontSize: 10}}>SALVAR</Text>
                                     </TouchableOpacity>
                                 </View>
                             </LinearGradient>

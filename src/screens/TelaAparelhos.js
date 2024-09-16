@@ -110,7 +110,7 @@ export default function TelaAparelhos({navigation}) {
                         <View style={styles.wrapperDireito}>
                             {item.data? (
                             <View style={{flexDirection: "column", padding: 6, justifyContent: "center", height: "100%", gap: 9}}>
-                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data}</Text>
+                            <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Estado: {item.data.switch}</Text>
                             <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Potência:</Text>
                             <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Tensão:</Text>
                             <Text style={{color: "lightgray", fontWeight: "600", fontSize: 16}}>Corrente:</Text>
